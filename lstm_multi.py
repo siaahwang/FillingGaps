@@ -36,9 +36,9 @@ station_additional_map = {
 
 for station in station_list:
     print(station)
-    data = pd.read_csv(f"F:\\SM\\interpolation\\dataset\\SMN-SDR_ground-data(03cm)_2018-2020\\30min_2019-2020\\{station}_SM.csv")
+    data = pd.read_csv(f"30min_2019-2020/{station}_SM.csv")
     df = pd.DataFrame(data)
-    data2 = pd.read_csv(f"F:\\SM\\interpolation\\dataset\\SMN-SDR_ground-data(03cm)_2018-2020\\30min_2019-2020\\{station}_PP.csv")
+    data2 = pd.read_csv(f"30min_2019-2020/{station}_PP.csv")
     df2 = pd.DataFrame(data2)
 
     df['Soil_VWC_03'] = df['Soil_VWC_03'].replace(9999, np.nan)
@@ -52,9 +52,9 @@ for station in station_list:
     if station in station_additional_map:
         additional_stations = station_additional_map[station]
         for additional_station in additional_stations:
-            additional_data = pd.read_csv(f"F:\\SM\\interpolation\\dataset\\SMN-SDR_ground-data(03cm)_2018-2020\\30min_2019-2020\\{additional_station}_SM.csv")
+            additional_data = pd.read_csv(f"30min_2019-2020/{additional_station}_SM.csv")
             additional_df = pd.DataFrame(additional_data)
-            additional_data_pp = pd.read_csv(f"F:\\SM\\interpolation\\dataset\\SMN-SDR_ground-data(03cm)_2018-2020\\30min_2019-2020\\{additional_station}_PP.csv")
+            additional_data_pp = pd.read_csv(f"30min_2019-2020/{additional_station}_PP.csv")
             additional_df_pp = pd.DataFrame(additional_data_pp)
 
             additional_df['Soil_VWC_03'] = additional_df['Soil_VWC_03'].replace(9999, np.nan)
@@ -113,16 +113,16 @@ for station in station_list:
         mape_test = np.mean(np.abs((y_test - y_pred_test) / y_test)) * 100
         mre_train = np.mean(np.abs((y_train - y_pred_train) / y_train))
         mape_train = np.mean(np.abs((y_train - y_pred_train) / y_train)) * 100
-        print(f"窗口大小 {seq_length} 的 Train MAE:", mae_train)
-        print(f"窗口大小 {seq_length} 的 Test MAE:", mae_test)
-        print(f"窗口大小 {seq_length} 的 Train RMSE:", rmse_train)
-        print(f"窗口大小 {seq_length} 的 Test RMSE:", rmse_test)
-        print(f"窗口大小 {seq_length} 的 Train R2:", r2_train)
-        print(f"窗口大小 {seq_length} 的 Test R2:", r2_test)
-        print(f"窗口大小 {seq_length} 的 Train MRE:", mre_train)
-        print(f"窗口大小 {seq_length} 的 Test MRE:", mre_test)
-        print(f"窗口大小 {seq_length} 的 Train MAPE:", mape_train)
-        print(f"窗口大小 {seq_length} 的 Test MAPE:", mape_test)
+        print(f"Train MAE with window size {seq_length}:", mae_train)
+        print(f"Test MAE with window size {seq_length}:", mae_test)
+        print(f"Train RMSE with window size {seq_length}:", rmse_train)
+        print(f"Test RMSE with window size {seq_length}:", rmse_test)
+        print(f"Train R2 with window size {seq_length}:", r2_train)
+        print(f"Test R2 with window size {seq_length}:", r2_test)
+        print(f"Train MRE with window size {seq_length}:", mre_train)
+        print(f"Test MRE with window size {seq_length}:", mre_test)
+        print(f"Train MAPE with window size {seq_length}:", mape_train)
+        print(f"Test MAPE with window size {seq_length}:", mape_test)
 
         metrics.append([station, seq_length, mae_train, rmse_train, r2_train, mre_train, mape_train, mae_test, rmse_test, r2_test, mre_test, mape_test])
 
@@ -131,7 +131,7 @@ for station in station_list:
             imputed = df.copy()
             half_seq_length = seq_length // 2
             for i in range(len(df)):
-                if imputed['mask'].iloc[i] == 1:  # 只处理缺失值
+                if imputed['mask'].iloc[i] == 1:
                     start_idx = max(0, i - half_seq_length)
                     end_idx = min(len(df), i + half_seq_length + 1)
                     if station in station_additional_map:
@@ -144,7 +144,7 @@ for station in station_list:
                     else:
                         window = imputed[['Prep', 'value_filled', 'mask']].iloc[start_idx:end_idx].drop(i).values
 
-                    # 如果窗口长度不足，使用0值填充
+
                     if len(window) < seq_length:
                         if start_idx == 0:
                             window = np.pad(window, ((seq_length - len(window), 0), (0, 0)), 'constant',
@@ -168,7 +168,6 @@ for station in station_list:
         df_imputed = impute_missing_values(df, model, seq_length, station)
         df_imputed.to_csv(f'result/multi/{station}_multi_{seq_length}_gapfilling_0.85.csv', index=True)
 
-        # 绘制数据的图表
 
         # plt.figure(figsize=(35, 5))
         # plt.rcParams.update({'font.size': 20})
@@ -176,13 +175,13 @@ for station in station_list:
         # plt.plot(df['Measure_Times'], df['Soil_VWC_03'], label='Actual Data', color='blue', linewidth=2.5)
         # plt.plot(df_imputed['Measure_Times'], df_imputed['Soil_VWC_03'], label='Imputed Data', color='orange')
         # plt.legend()
-        # plt.tight_layout()  # 自动调整子图参数以适应图形区域
-        # plt.subplots_adjust(left=0.02, right=0.97, top=0.95, bottom=0.1)  # 手动调整边距
+        # plt.tight_layout()
+        # plt.subplots_adjust(left=0.02, right=0.97, top=0.95, bottom=0.1)
         # plt.show()
         # plt.savefig(f"result/picture/{station}_plot.png")
 
 
-    # 将指标写入Excel文件
+
     metrics_df = pd.DataFrame(metrics,
                               columns=['Station', 'Window_Size', 'Train_MAE', 'Train_RMSE',
                                        'Train_R2', 'Train_MRE', 'Train_MAPE', 'Test_MAE', 'Test_RMSE', 'Test_R2',
